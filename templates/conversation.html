@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bubble - Conversation: {{ user }} &amp; {{ other }}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <style>
+    .conversation-box { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: darkblue;">
+    <a class="navbar-brand" href="{{ url_for('user_index') }}">Bubble</a>
+  </nav>
+  <div class="container mt-4">
+    <h1>Conversation: {{ user }} &amp; {{ other }}</h1>
+    <div class="conversation-box mb-3">
+      {% if conversation %}
+        {% for msg in conversation %}
+          <div class="mb-2">
+            <strong>{{ msg.sender }}:</strong> {{ msg.content }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No messages yet.</p>
+      {% endif %}
+    </div>
+    <form method="POST" action="{{ url_for('send_message', sender=user, recipient=other) }}">
+      <div class="form-group">
+        <textarea name="content" class="form-control" rows="3" placeholder="Type your message..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+    <a href="{{ url_for('chats', username=user) }}" class="btn btn-secondary mt-3">Back to Chats</a>
+  </div>
+</body>
+</html>
