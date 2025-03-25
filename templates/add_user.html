@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Bubble - Add New User{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand-lg" style="background-color:#b2ebf2;">
+  <a class="navbar-brand" href="{{ url_for('user_index') }}" style="color:#006064;">Bubble</a>
+</nav>
+<div class="container mt-4">
+  <h1>Add New User</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-success">
+        {% for message in messages %}
+          <div>{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <form method="POST" action="{{ url_for('add_user') }}">
+    <div class="form-group">
+      <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add User</button>
+  </form>
+  <a href="{{ url_for('user_index') }}" class="btn btn-secondary mt-3">Back to Home</a>
+</div>
+{% endblock %}

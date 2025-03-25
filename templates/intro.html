@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Bubble - Welcome{% endblock %}
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center vh-100" style="background-color: #e0f7fa; color: #00838f;">
+  <a class="btn btn-outline-light position-absolute" style="top:20px; right:20px; background-color:#006064; color:#fff;" href="{{ url_for('admin_dashboard') }}">Admin Page</a>
+  <div class="text-center">
+    <div class="mb-4" style="width:150px; height:150px; background-color: turquoise; border-radius:50%; margin: 0 auto; display:flex; align-items:center; justify-content:center;">
+      <h1 style="margin: 0;">Logo</h1>
+    </div>
+    <h1 style="font-size:3rem; color:#006064;">Welcome to Bubble</h1>
+    <p class="mb-4">The social network for connecting people</p>
+    <!-- Enter and Create User buttons -->
+    <button class="btn btn-lg mb-3" style="background-color:#006064; color:#fff; border:none; border-radius:50px; transition: transform 0.3s;" onclick="window.location.href='{{ url_for('user_index') }}'">
+      Enter
+    </button>
+    <br>
+    <button class="btn btn-lg" style="background-color:#006064; color:#fff; border:none; border-radius:50px; transition: transform 0.3s;" onclick="window.location.href='{{ url_for('add_user') }}'">
+      Create User
+    </button>
+  </div>
+</div>
+{% endblock %}

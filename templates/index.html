@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Bubble - Users{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand-lg" style="background-color:#b2ebf2;">
+  <a class="navbar-brand" href="{{ url_for('intro') }}" style="color:#006064;">Bubble</a>
+  <div class="ml-auto">
+    <!-- Home button that links to the intro page -->
+    <a class="btn" style="background-color:#006064; color:#fff; border-radius:4px;" href="{{ url_for('intro') }}">Home</a>
+    <a class="btn" style="background-color:#006064; color:#fff; border-radius:4px; margin-left: 10px;" href="{{ url_for('admin_dashboard') }}">Admin Page</a>
+  </div>
+</nav>
+<div class="container user-list-container mt-4">
+  <h2>All Users</h2>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="alert alert-success">
+        {% for message in messages %}
+          <div>{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  <ul class="list-unstyled">
+    {% for user in users %}
+      <li class="d-flex align-items-center mb-2">
+        <div class="user-pic" style="width:40px; height:40px; border-radius:50%; background-color:#e0f7fa; overflow:hidden; margin-right:10px;">
+          {% if user_pics[user] %}
+            <img src="{{ url_for('static', filename='images/' ~ user_pics[user]) }}" alt="{{ user }}" style="width:100%;">
+          {% else %}
+            <img src="{{ url_for('static', filename='images/default_avatar.png') }}" alt="Default Pic" style="width:100%;">
+          {% endif %}
+        </div>
+        <a href="{{ url_for('account', username=user) }}" style="color:#006064;">{{ user }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
