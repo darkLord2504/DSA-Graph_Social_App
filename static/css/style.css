@@ -1,0 +1,11 @@
+body {
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+  }
+  .dropdown-menu img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  
