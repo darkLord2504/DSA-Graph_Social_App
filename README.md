@@ -9,7 +9,7 @@ Bubble is a social network app built with Flask. It demonstrates:
   - A chat list and a conversation area loaded on the same page.
   - Profile picture upload.
 - An admin dashboard displaying a network graph visualization with proper directed/undirected edges and block arrows.
-- A consistent color theme (white, baby blue, turquoise).
+  
 
 ## Setup
 
