@@ -1,17 +1,45 @@
 import os
 import networkx as nx
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 from flask import render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 from app import app
 
+# -------------------------------
+# BFS-based Suggestions Function
+# -------------------------------
+def bfs_suggestions(graph, start, max_depth=2):
+    """
+    Performs BFS on the graph from 'start' up to max_depth.
+    Returns a set of nodes reachable within max_depth (excluding direct friends and self).
+    """
+    from collections import deque
+    visited = {start: 0}
+    queue = deque([start])
+    while queue:
+        current = queue.popleft()
+        current_depth = visited[current]
+        if current_depth < max_depth:
+            for neighbor in graph.get(current, []):
+                if neighbor not in visited:
+                    visited[neighbor] = current_depth + 1
+                    queue.append(neighbor)
+    suggestions = set(visited.keys())
+    suggestions.discard(start)
+    # Exclude direct friends:
+    suggestions -= graph[start]
+    return suggestions
+
+# -------------------------------
+# In‑Memory Data Structures
+# -------------------------------
 class SocialNetwork:
     def __init__(self):
         self.graph = {}             # username -> set of usernames they follow
-        self.messages = []          # list of messages {sender, recipient, content}
-        self.pending_blocks = []    # list of block requests {requester, target}
+        self.messages = []          # list of dicts { 'sender', 'recipient', 'content' }
+        self.pending_blocks = []    # list of block requests { 'requester', 'target' }
         self.temp_blocks = {}       # dict: blocker -> set(blocked)
         self.profile_pics = {}      # username -> filename (or None)
 
@@ -55,7 +83,10 @@ class SocialNetwork:
         return False
 
     def get_conversation(self, user1, user2):
-        return [msg for msg in self.messages if (msg['sender'] == user1 and msg['recipient'] == user2) or (msg['sender'] == user2 and msg['recipient'] == user1)]
+        return [
+            msg for msg in self.messages
+            if (msg['sender'] == user1 and msg['recipient'] == user2) or (msg['sender'] == user2 and msg['recipient'] == user1)
+        ]
 
     def request_block(self, requester, target):
         if requester in self.graph and target in self.graph:
@@ -71,7 +102,10 @@ class SocialNetwork:
             if requester not in self.temp_blocks:
                 self.temp_blocks[requester] = set()
             self.temp_blocks[requester].add(target)
-            self.pending_blocks = [r for r in self.pending_blocks if not (r['requester'] == requester and r['target'] == target)]
+            self.pending_blocks = [
+                r for r in self.pending_blocks
+                if not (r['requester'] == requester and r['target'] == target)
+            ]
             return True
         return False
 
@@ -144,19 +178,28 @@ class SocialNetwork:
         plt.savefig('static/graph.png')
         plt.close()
 
-# Create the global instance
+# Create global instance
 network = SocialNetwork()
 
-# INITIALIZE: At start, no one follows anyone and no messages.
-# (Users will be added via the add_user route.)
+# INITIAL DATA: At startup, no one follows anyone and no messages exist.
+# Users are created via the add_user route.
 
-@app.route('/')
+# -------------------------------
+# Routes
+# -------------------------------
+
+@app.route('/intro')
 def intro():
     return render_template('intro.html')
+
+@app.route('/')
+def root_redirect():
+    return redirect(url_for('intro'))
 
 @app.route('/users')
 def user_index():
     users = network.get_all_users()
+    # If no profile pic set, use default_avatar.png
     user_pics = {u: network.profile_pics[u] if network.profile_pics[u] else 'default_avatar.png' for u in users}
     return render_template('index.html', users=users, user_pics=user_pics)
 
@@ -167,23 +210,37 @@ def account(username):
         return redirect(url_for('user_index'))
     following = list(network.graph[username])
     followers = [u for u, follows in network.graph.items() if username in follows]
-    # Remove new messages part (we no longer display it)
-    # Prepare dropdown data
+    # Build dropdown lists for followers and following
     followers_list = [{'username': u, 'pic': network.profile_pics.get(u) if network.profile_pics.get(u) else 'default_avatar.png'} for u in followers]
     following_list = [{'username': u, 'pic': network.profile_pics.get(u) if network.profile_pics.get(u) else 'default_avatar.png'} for u in following]
+    # Friend suggestions: users not followed by current user
     friend_suggestions = []
     for u in network.get_all_users():
         if u != username and u not in following:
             friend_suggestions.append({'username': u, 'follows_me': (username in network.graph[u])})
-    # Chat partners: include all users (chat is allowed with any user)
+    # Chat partners: allow chatting with all users
     chat_partners = set(network.get_all_users())
     user_profile_pic = network.profile_pics.get(username) if network.profile_pics.get(username) else 'default_avatar.png'
+    # People you might know (BFS-based suggestions)
+    people_suggestions = bfs_suggestions(network.graph, username, max_depth=2)
+    # Convert suggestions to the needed format, excluding direct friends and self
+    people_you_might_know_list = []
+    for suggested_user in people_suggestions:
+        pic = network.profile_pics.get(suggested_user) if network.profile_pics.get(suggested_user) else 'default_avatar.png'
+        follows_me = (username in network.graph[suggested_user])
+        people_you_might_know_list.append({
+            'username': suggested_user,
+            'pic': pic,
+            'follows_me': follows_me
+        })
+    # Load conversation if chatWith query parameter is provided
     chatWith = request.args.get('chatWith')
     current_conversation = []
     if chatWith and chatWith in network.get_all_users():
         current_conversation = network.get_conversation(username, chatWith)
     else:
         chatWith = None
+
     return render_template(
         'account.html',
         username=username,
@@ -195,7 +252,8 @@ def account(username):
         chatWith=chatWith,
         current_conversation=current_conversation,
         followers_list=followers_list,
-        following_list=following_list
+        following_list=following_list,
+        people_you_might_know_list=people_you_might_know_list
     )
 
 @app.route('/upload_pic/<username>', methods=['POST'])
