@@ -14,7 +14,7 @@
       <div class="p-3">
         <!-- Profile Section -->
         <div class="d-flex align-items-center mb-2">
-          <div class="profile-pic">
+          <div class="profile-pic" style="width:50px; height:50px; border-radius:50%; overflow:hidden;">
             {% if user_profile_pic and user_profile_pic != 'default_avatar.png' %}
               <a href="{{ url_for('upload_pic', username=username) }}" onclick="return confirm('Click OK to change your profile picture.');">
                 <img src="{{ url_for('static', filename='images/' ~ user_profile_pic) }}" alt="Profile Pic" style="width:100%; height:auto;">
@@ -23,16 +23,26 @@
               <img src="{{ url_for('static', filename='images/default_avatar.png') }}" alt="Default Pic" style="width:100%; height:auto;">
             {% endif %}
           </div>
-          <h4 class="mb-0">{{ username }}</h4>
+          <h4 class="mb-0 ml-2">{{ username }}</h4>
         </div>
         {% if not user_profile_pic or user_profile_pic == 'default_avatar.png' %}
-          <!-- Show upload form only if no profile pic is set -->
+          <!-- Show upload form only if no custom profile pic is set -->
           <form method="POST" action="{{ url_for('upload_pic', username=username) }}" enctype="multipart/form-data" class="mb-3">
             <input type="file" name="profile_pic" class="form-control-file">
             <button type="submit" class="btn btn-sm btn-info mt-1">Upload</button>
           </form>
         {% endif %}
-        <!-- Followers / Following Dropdowns -->
+        <!-- Flash Messages (only on account page) -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-success">
+              {% for message in messages %}
+                <div>{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <!-- Dropdowns for Followers and Following -->
         <div class="mb-2">
           <div class="dropdown d-inline-block">
             <a class="dropdown-toggle" href="#" id="followersDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -41,13 +51,7 @@
             <div class="dropdown-menu" aria-labelledby="followersDropdown">
               {% for f in followers_list %}
                 <a class="dropdown-item d-flex align-items-center" href="#">
-                  {% if f.pic %}
-                    <img src="{{ url_for('static', filename='images/' ~ f.pic) }}" alt="{{ f.username }}"
-                         style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
-                  {% else %}
-                    <img src="{{ url_for('static', filename='images/default_avatar.png') }}" alt="Default Pic"
-                         style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
-                  {% endif %}
+                  <img src="{{ url_for('static', filename='images/' ~ f.pic) }}" alt="{{ f.username }}" style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
                   {{ f.username }}
                   <form method="POST" action="{{ url_for('request_block', username=username) }}" class="ml-auto">
                     <input type="hidden" name="target" value="{{ f.username }}">
@@ -57,8 +61,6 @@
               {% endfor %}
             </div>
           </div>
-          
-          
           &nbsp;&nbsp;
           <div class="dropdown d-inline-block">
             <a class="dropdown-toggle" href="#" id="followingDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -67,13 +69,7 @@
             <div class="dropdown-menu" aria-labelledby="followingDropdown">
               {% for fo in following_list %}
                 <a class="dropdown-item d-flex align-items-center" href="#">
-                  {% if fo.pic %}
-                    <img src="{{ url_for('static', filename='images/' ~ fo.pic) }}" alt="{{ fo.username }}"
-                         style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
-                  {% else %}
-                    <img src="{{ url_for('static', filename='images/default_avatar.png') }}" alt="Default Pic"
-                         style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
-                  {% endif %}
+                  <img src="{{ url_for('static', filename='images/' ~ fo.pic) }}" alt="{{ fo.username }}" style="width:20px; height:20px; border-radius:50%; margin-right:5px;">
                   {{ fo.username }}
                   <form method="POST" action="{{ url_for('unfollow', username=username) }}" class="ml-auto">
                     <input type="hidden" name="target" value="{{ fo.username }}">
@@ -83,7 +79,6 @@
               {% endfor %}
             </div>
           </div>
-          
         </div>
         <hr>
         <!-- Chat List -->
@@ -97,6 +92,28 @@
         {% else %}
           <p class="text-muted">No chats yet.</p>
         {% endif %}
+        <!-- People You Might Know Section (optional BFS-based suggestions) -->
+        <div class="mt-4">
+          <h4>People you might know</h4>
+          <div style="white-space: nowrap; overflow-x: auto;">
+            {% for person in people_you_might_know_list %}
+              <div style="display: inline-block; width: 100px; text-align: center; margin-right: 10px;">
+                <div style="width:50px; height:50px; border-radius:50%; overflow:hidden; margin:0 auto;">
+                  <img src="{{ url_for('static', filename='images/' ~ person.pic) }}" alt="{{ person.username }}" style="width:100%; height:auto;">
+                </div>
+                <div style="font-size:0.9rem;">{{ person.username }}</div>
+                <form method="POST" action="{{ url_for('follow', username=username) }}">
+                  <input type="hidden" name="target" value="{{ person.username }}">
+                  {% if person.follows_me %}
+                    <button class="btn btn-sm btn-primary mt-1">Follow Back</button>
+                  {% else %}
+                    <button class="btn btn-sm btn-primary mt-1">Follow</button>
+                  {% endif %}
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
     </div>
     <!-- CENTER COLUMN: Conversation -->
