@@ -1,22 +1,73 @@
 {% extends "base.html" %}
 {% block title %}Bubble - Welcome{% endblock %}
 {% block content %}
+<style>
+  /* Fade-in animation */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: fadeIn 1.2s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Bounce animation on button hover */
+  .btn-hover:hover {
+    animation: bounce 0.4s ease-in-out;
+  }
+  @keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  /* Slide-down effect for the logo */
+  .logo-slide {
+    opacity: 0;
+    transform: translateY(-50px);
+    animation: slideDown 1.5s ease-out forwards;
+  }
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
 <div class="d-flex flex-column justify-content-center align-items-center vh-100" style="background-color: #e0f7fa; color: #00838f;">
   <a class="btn btn-outline-light position-absolute" style="top:20px; right:20px; background-color:#006064; color:#fff;" href="{{ url_for('admin_dashboard') }}">Admin Page</a>
-  <div class="text-center">
-    <div class="mb-4" style="width:150px; height:150px; background-color: turquoise; border-radius:50%; margin: 0 auto; display:flex; align-items:center; justify-content:center;">
-      <h1 style="margin: 0;">Logo</h1>
+  
+  <!-- Logo Animation -->
+  <div class="text-center logo-slide">
+    <div class="mb-4" style="width:150px; height:150px; margin: 0 auto;">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" style="width:100%; height:100%; border-radius:50%;">
     </div>
-    <h1 style="font-size:3rem; color:#006064;">Welcome to Bubble</h1>
-    <p class="mb-4">The social network for connecting people</p>
-    <!-- Enter and Create User buttons -->
-    <button class="btn btn-lg mb-3" style="background-color:#006064; color:#fff; border:none; border-radius:50px; transition: transform 0.3s;" onclick="window.location.href='{{ url_for('user_index') }}'">
-      Enter
-    </button>
-    <br>
-    <button class="btn btn-lg" style="background-color:#006064; color:#fff; border:none; border-radius:50px; transition: transform 0.3s;" onclick="window.location.href='{{ url_for('add_user') }}'">
-      Create User
-    </button>
   </div>
+
+  <!-- Fade-in animation for text -->
+  <h1 class="fade-in" style="font-size:3rem; color:#006064;">Welcome to Bubble</h1>
+  <p class="fade-in mb-4" style="animation-delay: 0.3s;">The social network for connecting people</p>
+
+  <!-- Enter and Create User buttons with bounce effect -->
+  <button class="btn btn-lg btn-hover mb-3" style="background-color:#006064; color:#fff; border:none; border-radius:50px;" onclick="window.location.href='{{ url_for('user_index') }}'">
+    Enter
+  </button>
+  <br>
+  <button class="btn btn-lg btn-hover" style="background-color:#006064; color:#fff; border:none; border-radius:50px;" onclick="window.location.href='{{ url_for('add_user') }}'">
+    Create User
+  </button>
 </div>
 {% endblock %}
